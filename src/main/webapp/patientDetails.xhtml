@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:faces="jakarta.faces"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:c="jakarta.tags.core"
+      xmlns:p="primefaces">
+<h:head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <title>Hasta Detayları - Diyetisyen Takip</title>
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🥗&lt;/text&gt;&lt;/svg&gt;" />
+    <h:outputStylesheet library="webjars" name="primeflex/3.3.1/primeflex.min.css"/>
+    <h:outputStylesheet library="assets" name="css/layout.css"/>
+</h:head>
+<h:body>
+    <div class="layout-wrapper">
+        <div class="layout-topbar">
+            <div class="layout-topbar-inner flex justify-content-between align-items-center">
+                <div class="logo">
+                    <h:link outcome="index">
+                        <h2 class="m-0">Diyetisyen Takip</h2>
+                    </h:link>
+                </div>
+                <div class="topbar-menu">
+                    <h:form id="headerForm">
+                        <div class="flex align-items-center">
+                            <span class="mr-3">Hoş geldiniz, #{loggedInUser.fullName}</span>
+                            <p:button value="Ana Sayfa" icon="pi pi-home" styleClass="mr-2" outcome="index" />
+                            <p:commandButton value="Çıkış Yap" icon="pi pi-sign-out" 
+                                           action="#{loginBean.logout}" styleClass="ui-button-danger" />
+                        </div>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-content layout-content-inner">
+            <h:form id="messagesForm">
+                <p:messages id="messages" showDetail="false" closable="true" globalOnly="true" />
+            </h:form>
+
+            <c:if test="#{patientDetailsBean.accessAuthorized}">
+                <div class="grid">
+                    <!-- Üst Menü Butonları -->
+                    <div class="col-12">
+                        <div class="card pt-0 pb-0">
+                            <h:form id="breadcrumbForm">
+                                <p:breadCrumb>
+                                    <p:menuitem value="Ana Sayfa" url="index" />
+                                    <p:menuitem value="Hasta Detayları" url="#" />
+                                </p:breadCrumb>
+                            </h:form>
+                        </div>
+                    </div>
+
+                    <!-- Hasta Genel Bilgileri -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="grid">
+                                <div class="col-12 md:col-6">
+                                    <h1>#{patientDetailsBean.patient.user.fullName}</h1>
+                                    <div class="grid mt-3">
+                                        <div class="col-12 md:col-6">
+                                            <div class="flex align-items-center mb-2">
+                                                <i class="pi pi-envelope mr-2"></i>
+                                                <span>#{patientDetailsBean.patient.user.email}</span>
+                                            </div>
+                                            <div class="flex align-items-center mb-2">
+                                                <i class="pi pi-calendar mr-2"></i>
+                                                <span>Yaş: #{patientDetailsBean.calculateAge()}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 md:col-6">
+                                            <div class="flex align-items-center mb-2">
+                                                <i class="pi pi-user mr-2"></i>
+                                                <span>Cinsiyet: #{patientDetailsBean.patient.gender}</span>
+                                            </div>
+                                            <div class="flex align-items-center mb-2">
+                                                <i class="pi pi-arrows-v mr-2"></i>
+                                                <span>Boy: #{patientDetailsBean.patient.height} cm</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hasta Bilgileri Tablosu -->
+                                    <div class="card mt-3">
+                                        <h3>Hasta Bilgileri</h3>
+                                        <p:dataTable id="patientInfoTable" styleClass="mt-2">
+                                            <p:column headerText="Parametre" style="width: 40%">
+                                                <p:outputLabel value="Güncel Kilo" />
+                                            </p:column>
+                                            <p:column headerText="Değer" style="width: 60%">
+                                                <p:outputLabel value="#{patientDetailsBean.latestWeightRecord.weight} kg" rendered="#{patientDetailsBean.latestWeightRecord != null}" />
+                                                <p:outputLabel value="Veri yok" rendered="#{patientDetailsBean.latestWeightRecord == null}" />
+                                            </p:column>
+
+                                            <p:column headerText="Parametre">
+                                                <p:outputLabel value="Vücut Kitle İndeksi (BMI)" />
+                                            </p:column>
+                                            <p:column headerText="Değer">
+                                                <p:outputLabel value="#{patientDetailsBean.calculateBMI()} - #{patientDetailsBean.getBMIStatus()}" 
+                                                              rendered="#{patientDetailsBean.latestWeightRecord != null}" />
+                                                <p:outputLabel value="Veri yok" rendered="#{patientDetailsBean.latestWeightRecord == null}" />
+                                            </p:column>
+
+                                            <p:column headerText="Parametre">
+                                                <p:outputLabel value="Kilo Değişimi" />
+                                            </p:column>
+                                            <p:column headerText="Değer">
+                                                <p:outputLabel value="% #{patientDetailsBean.calculateWeightChangePercent()}" 
+                                                              rendered="#{patientDetailsBean.weightRecords.size() >= 2}" />
+                                                <p:outputLabel value="Veri yok" rendered="#{patientDetailsBean.weightRecords.size() lt 2}" />
+                                            </p:column>
+
+                                            <p:column headerText="Parametre">
+                                                <p:outputLabel value="Son Ölçüm Tarihi" />
+                                            </p:column>
+                                            <p:column headerText="Değer">
+                                                <p:outputLabel value="#{patientDetailsBean.latestWeightRecord.recordDate}" 
+                                                              rendered="#{patientDetailsBean.latestWeightRecord != null}">
+                                                    <f:converter converterId="localDateTimeConverter" />
+                                                </p:outputLabel>
+                                                <p:outputLabel value="Veri yok" rendered="#{patientDetailsBean.latestWeightRecord == null}" />
+                                            </p:column>
+
+                                            <p:column headerText="Parametre">
+                                                <p:outputLabel value="Güncel Diyet Planı" />
+                                            </p:column>
+                                            <p:column headerText="Değer">
+                                                <p:outputLabel value="#{patientDetailsBean.latestNutritionPlan.title}" 
+                                                              rendered="#{patientDetailsBean.latestNutritionPlan != null}" />
+                                                <p:outputLabel value="Aktif diyet planı yok" rendered="#{patientDetailsBean.latestNutritionPlan == null}" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <h:form id="patientActionsForm">
+                                            <p:commandButton value="Yeni Ölçüm Ekle" icon="pi pi-plus" styleClass="mr-2"
+                                                     actionListener="#{patientDetailsBean.openWeightRecordDialog}" 
+                                                     update=":weightRecordForm" />
+                                            <p:commandButton value="Yeni Diyet Planı" icon="pi pi-plus" 
+                                                     actionListener="#{patientDetailsBean.openNutritionPlanDialog}"
+                                                     update=":nutritionPlanForm" />
+                                        </h:form>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kilo Kayıtları Tablosu -->
+                <div class="col-12">
+                    <div class="card">
+                        <h3>Kilo Kayıtları</h3>
+                        <p:dataTable id="weightRecordsTable" value="#{patientDetailsBean.weightRecords}" var="record"
+                                   styleClass="mt-2" emptyMessage="Kilo kaydı bulunamadı">
+                            <p:column headerText="Tarih" sortBy="#{record.recordDate}" style="width: 10%">
+                                <h:outputText value="#{record.recordDate}">
+                                    <f:converter converterId="localDateTimeConverter" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Kilo (kg)" sortBy="#{record.weight}" style="width: 8%">
+                                <h:outputText value="#{record.weight}" />
+                            </p:column>
+                            <p:column headerText="Kas Ağırlığı (kg)" style="width: 8%">
+                                <h:outputText value="#{record.muscleWeight}" />
+                            </p:column>
+                            <p:column headerText="Yağ Ağırlığı (kg)" style="width: 8%">
+                                <h:outputText value="#{record.fatWeight}" />
+                            </p:column>
+                            <p:column headerText="Kemik Ağırlığı (kg)" style="width: 8%">
+                                <h:outputText value="#{record.boneWeight}" />
+                            </p:column>
+                            <p:column headerText="Kas Oranı (%)" style="width: 8%">
+                                <h:outputText value="#{record.muscleRatio}" />
+                            </p:column>
+                            <p:column headerText="Yağ Oranı (%)" style="width: 8%">
+                                <h:outputText value="#{record.fatRatio}" />
+                            </p:column>
+                            <p:column headerText="Vücut Su Oranı (%)" style="width: 8%">
+                                <h:outputText value="#{record.bodyWaterRatio}" />
+                            </p:column>
+                            <p:column headerText="VKİ Puanı" style="width: 8%">
+                                <h:outputText value="#{record.bmiScore}" />
+                            </p:column>
+                            <p:column headerText="Notlar">
+                                <h:outputText value="#{record.notes}" />
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </div>
+
+                <!-- Diyet Planları Tablosu -->
+                <div class="col-12">
+                    <div class="card">
+                        <h3>Diyet Planları</h3>
+                        <p:dataTable id="nutritionPlansTable" value="#{patientDetailsBean.nutritionPlans}" var="plan"
+                                   styleClass="mt-2" emptyMessage="Diyet planı bulunamadı">
+                            <p:column headerText="Başlık" sortBy="#{plan.title}" style="width: 20%">
+                                <h:outputText value="#{plan.title}" />
+                            </p:column>
+                            <p:column headerText="Başlangıç Tarihi" sortBy="#{plan.startDate}" style="width: 15%">
+                                <h:outputText value="#{plan.startDate}">
+                                    <f:converter converterId="localDateConverter" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Bitiş Tarihi" sortBy="#{plan.endDate}" style="width: 15%">
+                                <h:outputText value="#{plan.endDate}" rendered="#{plan.endDate != null}">
+                                    <f:converter converterId="localDateConverter" />
+                                </h:outputText>
+                                <h:outputText value="-" rendered="#{plan.endDate == null}" />
+                            </p:column>
+                            <p:column headerText="Günlük Kalori" style="width: 15%">
+                                <h:outputText value="#{plan.dailyCalorieTarget}" rendered="#{plan.dailyCalorieTarget != null}" />
+                                <h:outputText value="-" rendered="#{plan.dailyCalorieTarget == null}" />
+                            </p:column>
+                            <p:column headerText="Açıklama">
+                                <h:outputText value="#{plan.description}" />
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </div>
+            </c:if>
+
+            <!-- Weight Record Dialog -->
+            <h:form id="weightRecordForm">
+                <p:dialog id="weightRecordDialog" header="Yeni Ölçüm Ekle" 
+                          widgetVar="weightRecordDialog" modal="true" 
+                          visible="#{patientDetailsBean.weightRecordDialogVisible}"
+                          responsive="true" width="500" showEffect="fade" hideEffect="fade">
+
+                    <p:ajax event="close" listener="#{patientDetailsBean.closeWeightRecordDialog}" 
+                            update="weightRecordForm" />
+
+                    <div class="p-fluid">
+                        <div class="formgrid grid">
+                            <div class="field col-12 md:col-6">
+                                <p:outputLabel for="weight" value="Kilo (kg)" />
+                                <p:inputNumber id="weight" value="#{patientDetailsBean.newWeightRecord.weight}" 
+                                             required="true" minValue="0" maxValue="500" decimalPlaces="1" />
+                            </div>
+
+                            <div class="field col-12 md:col-6">
+                                <p:outputLabel for="muscleWeight" value="Kas Ağırlığı (kg)" />
+                                <p:inputNumber id="muscleWeight" value="#{patientDetailsBean.newWeightRecord.muscleWeight}" 
+                                             minValue="0" maxValue="300" decimalPlaces="1" />
+                            </div>
+
+                            <div class="field col-12 md:col-6">
+                                <p:outputLabel for="fatWeight" value="Yağ Ağırlığı (kg)" />
+                                <p:inputNumber id="fatWeight" value="#{patientDetailsBean.newWeightRecord.fatWeight}" 
+                                             minValue="0" maxValue="300" decimalPlaces="1" />
+                            </div>
+
+                            <div class="field col-12 md:col-6">
+                                <p:outputLabel for="boneWeight" value="Kemik Ağırlığı (kg)" />
+                                <p:inputNumber id="boneWeight" value="#{patientDetailsBean.newWeightRecord.boneWeight}" 
+                                             minValue="0" maxValue="50" decimalPlaces="1" />
+                            </div>
+
+                            <div class="field col-12 md:col-6">
+                                <p:outputLabel for="muscleRatio" value="Kas Oranı (%)" />
+                                <p:inputNumber id="muscleRatio" value="#{patientDetailsBean.newWeightRecord.muscleRatio}" 
+                                             minValue="0" maxValue="100" decimalPlaces="1" />
+                            </div>
+
+                            <div class="field col-12 md:col-6">
+                                <p:outputLabel for="fatRatio" value="Yağ Oranı (%)" />
+                                <p:inputNumber id="fatRatio" value="#{patientDetailsBean.newWeightRecord.fatRatio}" 
+                                             minValue="0" maxValue="100" decimalPlaces="1" />
+                            </div>
+
+                            <div class="field col-12 md:col-6">
+                                <p:outputLabel for="bodyWaterRatio" value="Vücut Su Oranı (%)" />
+                                <p:inputNumber id="bodyWaterRatio" value="#{patientDetailsBean.newWeightRecord.bodyWaterRatio}" 
+                                             minValue="0" maxValue="100" decimalPlaces="1" />
+                            </div>
+
+                            <div class="field col-12 md:col-6">
+                                <p:outputLabel for="bmiScore" value="VKİ Puanı" />
+                                <p:inputNumber id="bmiScore" value="#{patientDetailsBean.newWeightRecord.bmiScore}" 
+                                             minValue="0" maxValue="100" decimalPlaces="1" />
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <p:outputLabel for="recordDate" value="Tarih" />
+                            <p:calendar id="recordDate" value="#{patientDetailsBean.newWeightRecord.recordDate}" 
+                                      pattern="dd/MM/yyyy HH:mm" required="true" showTime="true">
+                                <f:converter converterId="localDateTimeConverter" />
+                            </p:calendar>
+                        </div>
+
+                        <div class="field">
+                            <p:outputLabel for="notes" value="Notlar" />
+                            <p:inputTextarea id="notes" value="#{patientDetailsBean.newWeightRecord.notes}" 
+                                           rows="3" autoResize="false" />
+                        </div>
+                    </div>
+
+                    <f:facet name="footer">
+                        <p:commandButton value="İptal" icon="pi pi-times" 
+                                       actionListener="#{patientDetailsBean.closeWeightRecordDialog}" 
+                                       styleClass="ui-button-secondary" />
+                        <p:commandButton value="Kaydet" icon="pi pi-check" 
+                                       actionListener="#{patientDetailsBean.saveWeightRecord}" 
+                                       update="messages weightRecordForm" />
+                    </f:facet>
+                </p:dialog>
+            </h:form>
+
+            <!-- Nutrition Plan Dialog -->
+            <h:form id="nutritionPlanForm">
+                <p:dialog id="nutritionPlanDialog" header="Yeni Diyet Planı Ekle" 
+                          widgetVar="nutritionPlanDialog" modal="true" 
+                          visible="#{patientDetailsBean.nutritionPlanDialogVisible}"
+                          responsive="true" width="600" showEffect="fade" hideEffect="fade">
+
+                    <p:ajax event="close" listener="#{patientDetailsBean.closeNutritionPlanDialog}" 
+                            update="nutritionPlanForm" />
+
+                    <div class="p-fluid">
+                        <div class="field">
+                            <p:outputLabel for="title" value="Başlık" />
+                            <p:inputText id="title" value="#{patientDetailsBean.newNutritionPlan.title}" 
+                                       required="true" />
+                        </div>
+
+                        <div class="field">
+                            <p:outputLabel for="startDate" value="Başlangıç Tarihi" />
+                            <p:calendar id="startDate" value="#{patientDetailsBean.newNutritionPlan.startDate}" 
+                                      pattern="dd/MM/yyyy" required="true">
+                                <f:converter converterId="localDateConverter" />
+                            </p:calendar>
+                        </div>
+
+                        <div class="field">
+                            <p:outputLabel for="endDate" value="Bitiş Tarihi" />
+                            <p:calendar id="endDate" value="#{patientDetailsBean.newNutritionPlan.endDate}" 
+                                      pattern="dd/MM/yyyy">
+                                <f:converter converterId="localDateConverter" />
+                            </p:calendar>
+                        </div>
+
+                        <div class="field">
+                            <p:outputLabel for="description" value="Açıklama" />
+                            <p:inputTextarea id="description" value="#{patientDetailsBean.newNutritionPlan.description}" 
+                                           rows="3" autoResize="false" />
+                        </div>
+
+                        <div class="formgrid grid">
+                            <div class="field col-12 md:col-4">
+                                <p:outputLabel for="dailyCalorieTarget" value="Günlük Kalori Hedefi" />
+                                <p:inputNumber id="dailyCalorieTarget" value="#{patientDetailsBean.newNutritionPlan.dailyCalorieTarget}" 
+                                             minValue="0" maxValue="10000" />
+                            </div>
+
+                            <div class="field col-12 md:col-4">
+                                <p:outputLabel for="proteinTarget" value="Protein Hedefi (g)" />
+                                <p:inputNumber id="proteinTarget" value="#{patientDetailsBean.newNutritionPlan.proteinTarget}" 
+                                             minValue="0" maxValue="1000" decimalPlaces="1" />
+                            </div>
+
+                            <div class="field col-12 md:col-4">
+                                <p:outputLabel for="carbsTarget" value="Karbonhidrat Hedefi (g)" />
+                                <p:inputNumber id="carbsTarget" value="#{patientDetailsBean.newNutritionPlan.carbsTarget}" 
+                                             minValue="0" maxValue="1000" decimalPlaces="1" />
+                            </div>
+
+                            <div class="field col-12 md:col-4">
+                                <p:outputLabel for="fatTarget" value="Yağ Hedefi (g)" />
+                                <p:inputNumber id="fatTarget" value="#{patientDetailsBean.newNutritionPlan.fatTarget}" 
+                                             minValue="0" maxValue="1000" decimalPlaces="1" />
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <p:outputLabel for="recommendations" value="Öneriler" />
+                            <p:inputTextarea id="recommendations" value="#{patientDetailsBean.newNutritionPlan.recommendations}" 
+                                           rows="3" autoResize="false" />
+                        </div>
+                    </div>
+
+                    <f:facet name="footer">
+                        <p:commandButton value="İptal" icon="pi pi-times" 
+                                       actionListener="#{patientDetailsBean.closeNutritionPlanDialog}" 
+                                       styleClass="ui-button-secondary" />
+                        <p:commandButton value="Kaydet" icon="pi pi-check" 
+                                       actionListener="#{patientDetailsBean.saveNutritionPlan}" 
+                                       update="messages nutritionPlanForm" />
+                    </f:facet>
+                </p:dialog>
+            </h:form>
+        </div>
+    </div>
+</h:body>
+</html>

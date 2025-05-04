@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:faces="jakarta.faces"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="primefaces"
+      xmlns:c="jakarta.tags.core">
+<h:head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Profil | Diyetisyen Takip</title>
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🥗&lt;/text&gt;&lt;/svg&gt;" />
+    <h:outputStylesheet library="webjars" name="primeflex/3.3.1/primeflex.min.css"/>
+    <h:outputStylesheet library="assets" name="css/layout.css"/>
+</h:head>
+<h:body>
+    <div class="layout-wrapper">
+        <div class="layout-topbar">
+            <div class="layout-topbar-inner flex justify-content-between align-items-center">
+                <div class="logo">
+                    <h:link outcome="index">
+                        <h2 class="m-0">Diyetisyen Takip</h2>
+                    </h:link>
+                </div>
+                <div class="topbar-menu">
+                    <c:if test="#{not empty loggedInUser}">
+                        <h:form id="logoutForm">
+                            <div class="flex align-items-center">
+                                <span class="mr-3">Hoş geldiniz, #{loggedInUser.fullName}</span>
+                                <p:button value="Ana Sayfa" icon="pi pi-home" styleClass="mr-2" outcome="index" />
+                                <p:commandButton value="Çıkış Yap" icon="pi pi-sign-out"
+                                                 action="#{loginBean.logout}" styleClass="ui-button-danger" />
+                            </div>
+                        </h:form>
+                    </c:if>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-content layout-content-inner">
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">
+                        <h2>Profil Bilgilerim</h2>
+                        <p:tabView>
+                            <p:tab title="Profil Bilgileri">
+                                <h:form id="profileForm">
+                                    <p:messages id="profileMessages" showDetail="false" closable="true" />
+
+                                    <div class="grid">
+                                        <div class="col-12 md:col-6">
+                                            <div class="field mb-4">
+                                                <p:outputLabel for="name" value="Ad" />
+                                                <p:inputText id="name" value="#{profileBean.currentUser.name}" 
+                                                             required="true" 
+                                                             requiredMessage="Lütfen adınızı giriniz"
+                                                             styleClass="w-full" />
+                                                <p:message for="name" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 md:col-6">
+                                            <div class="field mb-4">
+                                                <p:outputLabel for="surname" value="Soyad" />
+                                                <p:inputText id="surname" value="#{profileBean.currentUser.surname}" 
+                                                             required="true" 
+                                                             requiredMessage="Lütfen soyadınızı giriniz"
+                                                             styleClass="w-full" />
+                                                <p:message for="surname" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="field mb-4">
+                                                <p:outputLabel for="email" value="E-posta Adresi" />
+                                                <p:inputText id="email" value="#{profileBean.currentUser.email}" 
+                                                             required="true" 
+                                                             requiredMessage="Lütfen e-posta adresinizi giriniz"
+                                                             styleClass="w-full" />
+                                                <p:message for="email" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <p:commandButton value="Bilgilerimi Güncelle" 
+                                                             action="#{profileBean.updateProfile}"
+                                                             update="profileMessages"
+                                                             icon="pi pi-save"
+                                                             styleClass="w-full md:w-auto" />
+                                        </div>
+                                    </div>
+                                </h:form>
+                            </p:tab>
+
+                            <p:tab title="Şifre Değiştir">
+                                <h:form id="passwordForm">
+                                    <p:messages id="passwordMessages" showDetail="false" closable="true" />
+
+                                    <div class="grid">
+                                        <div class="col-12">
+                                            <div class="field mb-4">
+                                                <p:outputLabel for="currentPassword" value="Mevcut Şifre" />
+                                                <p:password id="currentPassword" value="#{profileBean.currentPassword}" 
+                                                            required="true"
+                                                            requiredMessage="Lütfen mevcut şifrenizi giriniz"
+                                                            feedback="false"
+                                                            toggleMask="true"
+                                                            styleClass="w-full" />
+                                                <p:message for="currentPassword" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="field mb-4">
+                                                <p:outputLabel for="newPassword" value="Yeni Şifre" />
+                                                <p:password id="newPassword" value="#{profileBean.newPassword}" 
+                                                            required="true"
+                                                            requiredMessage="Lütfen yeni şifrenizi giriniz"
+                                                            feedback="true"
+                                                            promptLabel="Lütfen şifre giriniz"
+                                                            weakLabel="Zayıf"
+                                                            goodLabel="İyi"
+                                                            strongLabel="Güçlü"
+                                                            toggleMask="true"
+                                                            styleClass="w-full" />
+                                                <p:message for="newPassword" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="field mb-4">
+                                                <p:outputLabel for="confirmPassword" value="Yeni Şifre (Tekrar)" />
+                                                <p:password id="confirmPassword" value="#{profileBean.confirmPassword}" 
+                                                            required="true"
+                                                            requiredMessage="Lütfen yeni şifrenizi tekrar giriniz"
+                                                            feedback="false"
+                                                            toggleMask="true"
+                                                            styleClass="w-full" />
+                                                <p:message for="confirmPassword" />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <p:commandButton value="Şifremi Değiştir" 
+                                                             action="#{profileBean.changePassword}"
+                                                             update="passwordMessages"
+                                                             icon="pi pi-key"
+                                                             styleClass="w-full md:w-auto" />
+                                        </div>
+                                    </div>
+                                </h:form>
+                            </p:tab>
+                        </p:tabView>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-footer">
+            <div class="footer-content">
+                <p>© 2024 Diyetisyen Takip Uygulaması. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>

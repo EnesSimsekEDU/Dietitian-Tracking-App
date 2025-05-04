@@ -1,0 +1,69 @@
+/* Genel Stil */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--surface-ground);
+    color: var(--text-color);
+}
+
+.layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Üst menü */
+.layout-topbar {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+    padding: 0.5rem 2rem;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.layout-topbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.5rem 0;
+}
+
+.logo h2 {
+    color: var(--primary-color-text);
+}
+
+/* İçerik alanı */
+.layout-content {
+    flex: 1;
+    padding: 2rem;
+}
+
+.layout-content-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Kartlar */
+.card {
+    background-color: var(--surface-card);
+    border-radius: 10px;
+    box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Footer */
+.layout-footer {
+    background-color: var(--surface-section);
+    color: var(--text-color);
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--surface-border);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}

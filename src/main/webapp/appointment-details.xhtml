@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:faces="jakarta.faces"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:pt="jakarta.faces.passthrough"
+      xmlns:c="jakarta.tags.core"
+      xmlns:p="primefaces">
+<h:head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <title>Randevu Detayları - Diyetisyen Takip</title>
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🥗&lt;/text&gt;&lt;/svg&gt;" />
+    <h:outputStylesheet library="webjars" name="primeflex/3.3.1/primeflex.min.css"/>
+    <h:outputStylesheet library="assets" name="css/layout.css"/>
+    <style type="text/css">
+        .status-scheduled { color: #2196F3; }
+        .status-completed { color: #4CAF50; }
+        .status-cancelled { color: #F44336; }
+
+        .appointment-card {
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .consultation-card {
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</h:head>
+
+<h:body>
+    <div class="layout-wrapper">
+        <div class="layout-topbar">
+            <div class="layout-topbar-inner flex justify-content-between align-items-center">
+                <div class="logo">
+                    <h2 class="m-0">Diyetisyen Takip</h2>
+                </div>
+                <div class="topbar-menu">
+                    <c:choose>
+                        <c:when test="#{not empty loggedInUser}">
+                            <h:form id="logoutForm">
+                                <div class="flex align-items-center">
+                                    <span class="mr-3">Hoş geldiniz, #{loggedInUser.fullName}</span>
+                                    <p:button value="Profilim" icon="pi pi-user" styleClass="mr-2" outcome="profile" />
+                                    <p:commandButton value="Çıkış Yap" icon="pi pi-sign-out"
+                                                     action="#{loginBean.logout}" styleClass="ui-button-danger" />
+                                </div>
+                            </h:form>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="flex">
+                                <p:button value="Giriş Yap" icon="pi pi-sign-in" styleClass="mr-2" outcome="login" />
+                                <p:button value="Üye Ol" icon="pi pi-user-plus" styleClass="ui-button-success" outcome="register" />
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-content layout-content-inner">
+            <div class="grid">
+                <div class="col-12">
+                    <p:button value="Geri Dön" icon="pi pi-arrow-left" outcome="dietitian" styleClass="mb-3" />
+
+                    <h:form id="appointmentForm">
+                        <p:messages id="messages" showDetail="true" closable="true">
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <c:if test="#{appointmentDetailsBean.appointment != null}">
+                            <div class="card appointment-card mb-4">
+                                <h2 class="section-title">Randevu Bilgileri</h2>
+
+                                <div class="grid">
+                                    <div class="col-12 md:col-6">
+                                        <div class="field">
+                                            <p:outputLabel value="Hasta:" />
+                                            <div class="text-xl">#{appointmentDetailsBean.appointment.patient.user.fullName}</div>
+                                        </div>
+
+                                        <div class="field mt-3">
+                                            <p:outputLabel value="Tarih ve Saat:" />
+                                            <div class="text-xl">
+                                                <h:outputText value="#{appointmentDetailsBean.appointment.appointmentDateTime}">
+                                                    <f:convertDateTime pattern="dd.MM.yyyy HH:mm" type="localDateTime" />
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 md:col-6">
+                                        <div class="field">
+                                            <p:outputLabel value="Durum:" />
+                                            <div class="text-xl">
+                                                <span class="#{appointmentDetailsBean.getStatusClass(appointmentDetailsBean.appointment.status)}">
+                                                    #{appointmentDetailsBean.getStatusLabel(appointmentDetailsBean.appointment.status)}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="field mt-3">
+                                            <p:outputLabel for="status" value="Durumu Güncelle:" />
+                                            <p:selectOneMenu id="status" value="#{appointmentDetailsBean.appointment.status}" styleClass="w-full">
+                                                <f:selectItems value="#{appointmentDetailsBean.statusOptions}" var="status"
+                                                               itemLabel="#{appointmentDetailsBean.getStatusLabel(status)}" itemValue="#{status}" />
+                                                <p:ajax update="@this" />
+                                            </p:selectOneMenu>
+                                            <p:commandButton value="Güncelle" icon="pi pi-save" 
+                                                             action="#{appointmentDetailsBean.updateAppointmentStatus}"
+                                                             update="appointmentForm" styleClass="mt-2" />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 mt-3">
+                                        <div class="field">
+                                            <p:outputLabel value="Notlar:" />
+                                            <div class="p-2 surface-200 border-round">
+                                                <h:outputText value="#{appointmentDetailsBean.appointment.notes}" escape="false" />
+                                                <h:outputText value="Not bulunmuyor." rendered="#{empty appointmentDetailsBean.appointment.notes}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card consultation-card">
+                                <h2 class="section-title">Konsültasyon</h2>
+
+                                <c:choose>
+                                    <c:when test="#{appointmentDetailsBean.hasConsultation() and !appointmentDetailsBean.editMode}">
+                                        <!-- View mode for existing consultation -->
+                                        <div class="grid">
+                                            <div class="col-12">
+                                                <div class="field">
+                                                    <p:outputLabel value="Bulgular:" />
+                                                    <div class="p-2 surface-200 border-round">
+                                                        <h:outputText value="#{appointmentDetailsBean.consultation.findings}" escape="false" />
+                                                        <h:outputText value="Bulgu bulunmuyor." rendered="#{empty appointmentDetailsBean.consultation.findings}" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 mt-3">
+                                                <div class="field">
+                                                    <p:outputLabel value="Öneriler:" />
+                                                    <div class="p-2 surface-200 border-round">
+                                                        <h:outputText value="#{appointmentDetailsBean.consultation.recommendations}" escape="false" />
+                                                        <h:outputText value="Öneri bulunmuyor." rendered="#{empty appointmentDetailsBean.consultation.recommendations}" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 mt-3">
+                                                <div class="field">
+                                                    <p:outputLabel value="Sonraki Adımlar:" />
+                                                    <div class="p-2 surface-200 border-round">
+                                                        <h:outputText value="#{appointmentDetailsBean.consultation.nextSteps}" escape="false" />
+                                                        <h:outputText value="Sonraki adım bulunmuyor." rendered="#{empty appointmentDetailsBean.consultation.nextSteps}" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 mt-3">
+                                                <div class="field">
+                                                    <p:outputLabel value="Oluşturulma Tarihi:" />
+                                                    <div>
+                                                        <h:outputText value="#{appointmentDetailsBean.consultation.createdAt}">
+                                                            <f:convertDateTime pattern="dd.MM.yyyy HH:mm" type="localDateTime" />
+                                                        </h:outputText>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 mt-3">
+                                                <p:commandButton value="Düzenle" icon="pi pi-pencil" 
+                                                                 action="#{appointmentDetailsBean.toggleEditMode}"
+                                                                 update="appointmentForm" />
+                                            </div>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <!-- Edit mode for new or existing consultation -->
+                                        <div class="grid">
+                                            <div class="col-12">
+                                                <div class="field">
+                                                    <p:outputLabel for="findings" value="Bulgular:" />
+                                                    <p:inputTextarea id="findings" value="#{appointmentDetailsBean.consultation.findings}"
+                                                                     rows="5" styleClass="w-full" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 mt-3">
+                                                <div class="field">
+                                                    <p:outputLabel for="recommendations" value="Öneriler:" />
+                                                    <p:inputTextarea id="recommendations" value="#{appointmentDetailsBean.consultation.recommendations}"
+                                                                     rows="5" styleClass="w-full" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 mt-3">
+                                                <div class="field">
+                                                    <p:outputLabel for="nextSteps" value="Sonraki Adımlar:" />
+                                                    <p:inputTextarea id="nextSteps" value="#{appointmentDetailsBean.consultation.nextSteps}"
+                                                                     rows="5" styleClass="w-full" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 mt-3">
+                                                <p:commandButton value="Kaydet" icon="pi pi-save" 
+                                                                 action="#{appointmentDetailsBean.saveConsultation}"
+                                                                 update="appointmentForm" styleClass="mr-2" />
+
+                                                <p:commandButton value="İptal" icon="pi pi-times" 
+                                                                 action="#{appointmentDetailsBean.toggleEditMode}"
+                                                                 update="appointmentForm" styleClass="ui-button-secondary"
+                                                                 rendered="#{appointmentDetailsBean.hasConsultation()}" />
+                                            </div>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                        </c:if>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-footer">
+            <div class="footer-content">
+                <p>© 2024 Diyetisyen Takip Uygulaması. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>

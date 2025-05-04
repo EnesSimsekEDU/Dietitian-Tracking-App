@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:faces="jakarta.faces"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:pt="jakarta.faces.passthrough"
+      xmlns:c="jakarta.tags.core"
+      xmlns:p="primefaces">
+<h:head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <title>Diyetisyen Paneli - Diyetisyen Takip</title>
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🥗&lt;/text&gt;&lt;/svg&gt;" />
+    <h:outputStylesheet library="webjars" name="primeflex/3.3.1/primeflex.min.css"/>
+    <h:outputStylesheet library="assets" name="css/layout.css"/>
+</h:head>
+
+<h:body>
+    <div class="layout-wrapper">
+        <div class="layout-topbar">
+            <div class="layout-topbar-inner flex justify-content-between align-items-center">
+                <div class="logo">
+                    <h2 class="m-0">Diyetisyen Takip</h2>
+                </div>
+                <div class="topbar-menu">
+                    <c:choose>
+                        <c:when test="#{not empty loggedInUser}">
+                            <h:form id="logoutForm">
+                                <div class="flex align-items-center">
+                                    <span class="mr-3">Hoş geldiniz, #{loggedInUser.fullName}</span>
+                                    <p:button value="Profilim" icon="pi pi-user" styleClass="mr-2" outcome="profile" />
+                                    <p:commandButton value="Çıkış Yap" icon="pi pi-sign-out"
+                                                     action="#{loginBean.logout}" styleClass="ui-button-danger" />
+                                </div>
+                            </h:form>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="flex">
+                                <p:button value="Giriş Yap" icon="pi pi-sign-in" styleClass="mr-2" outcome="login" />
+                                <p:button value="Üye Ol" icon="pi pi-user-plus" styleClass="ui-button-success" outcome="register" />
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-content layout-content-inner">
+            <h:form id="mainForm">
+                <div class="grid">
+                    <!-- Özet Bilgiler -->
+                    <div class="col-12">
+                        <div class="grid">
+                            <div class="col-12 md:col-4">
+                                <div class="card surface-section border-1 border-100 border-round">
+                                    <div class="flex align-items-center">
+                                        <i class="pi pi-users text-3xl mr-3 text-primary"></i>
+                                        <div>
+                                            <div class="text-lg text-500">Toplam Hasta</div>
+                                            <div class="text-2xl font-bold">#{dietitianBean.patients.size()}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-4">
+                                <div class="card surface-section border-1 border-100 border-round">
+                                    <div class="flex align-items-center">
+                                        <i class="pi pi-calendar text-3xl mr-3 text-primary"></i>
+                                        <div>
+                                            <div class="text-lg text-500">Yaklaşan Randevular</div>
+                                            <div class="text-2xl font-bold">#{dietitianBean.upcomingAppointments.size()}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-4">
+                                <div class="card surface-section border-1 border-100 border-round">
+                                    <div class="flex align-items-center">
+                                        <i class="pi pi-calendar-plus text-3xl mr-3 text-primary"></i>
+                                        <div>
+                                            <div class="text-lg text-500">Bugünkü Randevular</div>
+                                            <div class="text-2xl font-bold">
+                                                <h:outputText value="#{dietitianBean.upcomingAppointments.stream().filter(a -> a.appointmentDateTime.equals(java.time.LocalDate.now())).count()}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Yaklaşan Randevular -->
+                    <div class="col-12">
+                        <div class="card">
+                            <h2>Yaklaşan Randevular</h2>
+                            <p:dataTable value="#{dietitianBean.upcomingAppointments}" var="appointment"
+                                         styleClass="mt-3" emptyMessage="Yaklaşan randevu bulunamadı"
+                                         paginator="true" rows="5"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} / {totalRecords}"
+                                         rowsPerPageTemplate="5,10,15"
+                                         sortBy="#{appointment.appointmentDateTime}" sortOrder="ascending">
+                                <p:column headerText="Hasta" sortBy="#{appointment.patient.user.fullName}" filterBy="#{appointment.patient.user.fullName}" filterMatchMode="contains">
+                                    <h:outputText value="#{appointment.patient.user.fullName}" />
+                                </p:column>
+                                <p:column headerText="Tarih" sortBy="#{appointment.appointmentDateTime}">
+                                    <h:outputText value="#{appointment.appointmentDateTime}">
+                                        <f:convertDateTime pattern="dd.MM.yyyy" type="localDateTime" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Saat" sortBy="#{appointment.appointmentDateTime}">
+                                    <h:outputText value="#{appointment.appointmentDateTime}">
+                                        <f:convertDateTime pattern="HH:mm:ss" type="localDateTime" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Durum" sortBy="#{appointment.status}" filterBy="#{appointment.status}" filterMatchMode="exact">
+                                    <h:outputText value="#{appointment.status}" />
+                                </p:column>
+                                <p:column headerText="İşlemler" style="width:100px; text-align: center">
+                                    <p:button icon="pi pi-info-circle" styleClass="ui-button-info"
+                                              outcome="appointment-details">
+                                        <f:param name="appointmentId" value="#{appointment.id}" />
+                                    </p:button>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </div>
+
+                    <!-- Hasta Listesi -->
+                    <div class="col-12">
+                        <div class="card">
+                            <h2>Hasta Listesi</h2>
+                            <div class="flex mb-3">
+                                <p:inputText value="#{dietitianBean.searchName}"
+                                             placeholder="Hasta adı ile ara..." styleClass="mr-2" />
+                                <p:commandButton value="Ara" icon="pi pi-search" actionListener="#{dietitianBean.searchPatients}"
+                                                 update=":mainForm:patientTable" styleClass="mr-2" />
+                                <p:commandButton value="Tümünü Göster" icon="pi pi-sync" action="#{dietitianBean.init}"
+                                                 update=":mainForm:patientTable" />
+                            </div>
+
+                            <p:dataTable id="patientTable" value="#{dietitianBean.patients}" var="patient"
+                                         styleClass="mt-3" emptyMessage="Hasta bulunamadı"
+                                         paginator="true" rows="10"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} / {totalRecords}"
+                                         rowsPerPageTemplate="10,20,30"
+                                         sortBy="#{patient.user.fullName}">
+                                <p:column headerText="Hasta Adı" sortBy="#{patient.user.fullName}" filterBy="#{patient.user.fullName}" filterMatchMode="contains">
+                                    <h:outputText value="#{patient.user.fullName}" />
+                                </p:column>
+                                <p:column headerText="E-posta" sortBy="#{patient.user.email}">
+                                    <h:outputText value="#{patient.user.email}" />
+                                </p:column>
+                                <p:column headerText="Yaş" sortBy="#{dietitianBean.calculateAge(patient.birthDate)}">
+                                    <h:outputText value="#{dietitianBean.calculateAge(patient.birthDate)}" />
+                                </p:column>
+                                <p:column headerText="Cinsiyet" sortBy="#{patient.gender}" filterBy="#{patient.gender}" filterMatchMode="exact">
+                                    <h:outputText value="#{patient.gender}" />
+                                </p:column>
+                                <p:column headerText="Boy" sortBy="#{patient.height}">
+                                    <h:outputText value="#{patient.height} cm" />
+                                </p:column>
+                                <p:column headerText="İşlemler" style="width:120px; text-align: center">
+                                    <p:button icon="pi pi-search" value="Detaylar" styleClass="ui-button-info"
+                                              outcome="#{dietitianBean.goToPatientDetails(patient.id)}" />
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </div>
+
+        <div class="layout-footer">
+            <div class="footer-content">
+                <p>© 2024 Diyetisyen Takip Uygulaması. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>

@@ -1,0 +1,8 @@
+This is a placeholder for a favicon file.
+
+To add a proper favicon:
+1. Create a favicon.ico file
+2. Place it in the src/main/resources/static directory
+3. It will be automatically served at the context root
+
+Alternatively, you can use an emoji favicon as was previously done, but with proper JSF resource handling.

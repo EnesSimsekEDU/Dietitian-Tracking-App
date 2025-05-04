@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:faces="jakarta.faces"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="primefaces">
+<h:head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Giriş Yap | Diyetisyen Takip</title>
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🥗&lt;/text&gt;&lt;/svg&gt;" />
+    <h:outputStylesheet library="webjars" name="primeflex/3.3.1/primeflex.min.css"/>
+    <h:outputStylesheet library="assets" name="css/layout.css"/>
+</h:head>
+<h:body>
+    <div class="layout-wrapper">
+        <div class="layout-topbar">
+            <div class="layout-topbar-inner flex justify-content-between align-items-center">
+                <div class="logo">
+                    <h:link outcome="index">
+                        <h2 class="m-0">Diyetisyen Takip</h2>
+                    </h:link>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-content layout-content-inner">
+            <div class="flex justify-content-center">
+                <div class="card" style="width: 450px">
+                    <h2 class="text-center mb-5">Giriş Yap</h2>
+
+                    <h:form id="loginForm">
+                        <p:messages id="messages" showDetail="false" closable="true" />
+
+                        <div class="field mb-4">
+                            <p:outputLabel for="email" value="E-posta Adresi" />
+                            <p:inputText id="email" value="#{loginBean.email}" 
+                                         required="true" 
+                                         requiredMessage="Lütfen e-posta adresinizi giriniz"
+                                         placeholder="E-posta adresinizi giriniz"
+                                         styleClass="w-full" />
+                            <p:message for="email" />
+                        </div>
+
+                        <div class="field mb-4">
+                            <p:outputLabel for="password" value="Şifre" />
+                            <p:password id="password" value="#{loginBean.password}" 
+                                        required="true"
+                                        requiredMessage="Lütfen şifrenizi giriniz"
+                                        placeholder="Şifrenizi giriniz"
+                                        feedback="false"
+                                        toggleMask="true"
+                                        styleClass="w-full" />
+                            <p:message for="password" />
+                        </div>
+
+                        <div class="field-checkbox mb-4">
+                            <p:selectBooleanCheckbox id="remember" value="#{loginBean.rememberMe}" />
+                            <p:outputLabel for="remember" value="Beni hatırla" />
+                        </div>
+
+                        <p:commandButton value="Giriş Yap"
+                                         action="#{loginBean.login}"
+                                         update="messages"
+                                         icon="pi pi-sign-in"
+                                         styleClass="w-full" />
+
+                        <div class="mt-4 text-center">
+                            <p:link outcome="register" value="Henüz hesabınız yok mu? Üye olun" />
+                        </div>
+                    </h:form>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-footer">
+            <div class="footer-content">
+                <p>© 2024 Diyetisyen Takip Uygulaması. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>

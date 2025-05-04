@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:faces="jakarta.faces"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:pt="jakarta.faces.passthrough"
+      xmlns:c="jakarta.tags.core"
+      xmlns:p="primefaces">
+<h:head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <title>Diyetisyen Paneli - Diyetisyen Takip</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🥗%3C/text%3E%3C/svg%3E" />
+    <h:outputStylesheet library="webjars" name="primeflex/3.3.1/primeflex.min.css"/>
+    <h:outputStylesheet library="assets" name="css/layout.css"/>
+</h:head>
+
+<h:body>
+    <div class="layout-wrapper">
+        <div class="layout-topbar">
+            <div class="layout-topbar-inner flex justify-content-between align-items-center">
+                <div class="logo">
+                    <h2 class="m-0">Diyetisyen Takip</h2>
+                </div>
+                <div class="topbar-menu">
+                    <c:choose>
+                        <c:when test="#{not empty loggedInUser}">
+                            <h:form id="logoutForm">
+                                <div class="flex align-items-center">
+                                    <span class="mr-3">Hoş geldiniz, #{loggedInUser.fullName}</span>
+                                    <p:button value="Profilim" icon="pi pi-user" styleClass="mr-2" outcome="profile" />
+                                    <p:commandButton value="Çıkış Yap" icon="pi pi-sign-out"
+                                                     action="#{loginBean.logout}" styleClass="ui-button-danger" />
+                                </div>
+                            </h:form>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="flex">
+                                <p:button value="Giriş Yap" icon="pi pi-sign-in" styleClass="mr-2" outcome="login" />
+                                <p:button value="Üye Ol" icon="pi pi-user-plus" styleClass="ui-button-success" outcome="register" />
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+        </div>
+
+        <div class="layout-content layout-content-inner">
+            <c:choose>
+                <c:when test="#{not empty loggedInUser and loggedInUser.role eq 'DIETITIAN'}">
+                    <div class="grid">
+                        <div class="col-12">
+                            <div class="card">
+                                <h1 class="text-center">Diyetisyen Paneline Yönlendiriliyorsunuz...</h1>
+                                <div class="p-5 text-center">
+                                    <p class="text-xl line-height-3 mb-5">
+                                        Diyetisyen panelinize erişmek için <a href="#{request.contextPath}/dietitian">buraya tıklayın</a>.
+                                    </p>
+                                    <h:outputScript>
+                                        // Use setTimeout to ensure the page is fully loaded before redirecting
+                                        setTimeout(function() {
+                                            window.location.href = "#{request.contextPath}/dietitian";
+                                        }, 100);
+                                    </h:outputScript>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="grid">
+                        <div class="col-12">
+                            <div class="card">
+                                <h1 class="text-center">Sağlıklı Yaşam İçin Diyetisyen Takip Uygulaması</h1>
+                                <div class="p-5 text-center">
+                                    <p class="text-xl line-height-3 mb-5">
+                                        Profesyonel diyetisyenlerimizle sağlıklı beslenme alışkanlıkları edinin,
+                                        kişiselleştirilmiş beslenme planlarıyla hedeflerinize ulaşın.
+                                    </p>
+
+                                    <div class="grid mt-5">
+                                        <div class="col-12 md:col-4">
+                                            <div class="p-3 border-round bg-primary-50">
+                                                <i class="pi pi-calendar mb-3" style="font-size: 2rem"></i>
+                                                <h2>Randevu Yönetimi</h2>
+                                                <p>Diyetisyenlerimizle kolayca randevu planlayın ve takip edin.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 md:col-4">
+                                            <div class="p-3 border-round bg-primary-50">
+                                                <i class="pi pi-chart-line mb-3" style="font-size: 2rem"></i>
+                                                <h2>İlerleme Takibi</h2>
+                                                <p>Beslenme ve kilo değişimlerinizi grafik ve tablolarla takip edin.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 md:col-4">
+                                            <div class="p-3 border-round bg-primary-50">
+                                                <i class="pi pi-list mb-3" style="font-size: 2rem"></i>
+                                                <h2>Beslenme Planları</h2>
+                                                <p>Kişiselleştirilmiş beslenme planlarınızı görüntüleyin ve uygulayın.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </div>
+
+        <div class="layout-footer">
+            <div class="footer-content">
+                <p>© 2024 Diyetisyen Takip Uygulaması. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>
