@@ -48,25 +48,30 @@ Proje, standart bir Spring Boot uygulaması yapısını takip etmektedir:
 
 1. Projeyi klonlayın:
    ```
-   git clone https://github.com/EnesSimsekEDU/DietitianTrackingApp.git
+   git clone https://github.com/EnesSimsekEDU/Dietitian-Tracking-App.git
    ```
-
+   
 2. Proje dizinine gidin:
    ```
-   cd DietitianTrackingApp
+   application.properties dosyasında h2 db bilgilerini aktif edin. postgresql db bilgilerini pasife çekin. Pom xml dosyasında h2 bağımlılığını aktif edin.
+   ```   
+
+3. Proje dizinine gidin:
+   ```
+   cd Dietitian-Tracking-App
    ```
 
-3. Maven ile projeyi derleyin:
+4. Maven ile projeyi derleyin:
    ```
    ./mvnw clean install
    ```
 
-4. Uygulamayı çalıştırın:
+5. Uygulamayı çalıştırın:
    ```
    ./mvnw spring-boot:run
    ```
 
-5. Tarayıcınızda aşağıdaki URL'i açın:
+6. Tarayıcınızda aşağıdaki URL'i açın:
    ```
    http://localhost:8080
    ```

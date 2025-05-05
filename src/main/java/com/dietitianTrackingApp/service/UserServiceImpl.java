@@ -1,7 +1,6 @@
 package com.dietitianTrackingApp.service;
 
 import com.dietitianTrackingApp.entity.User;
-import com.dietitianTrackingApp.entity.UserRole;
 import com.dietitianTrackingApp.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,8 +42,8 @@ public class UserServiceImpl implements UserService {
     
     @Override
     @Transactional(readOnly = true)
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("user not found"));
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
     
     @Override

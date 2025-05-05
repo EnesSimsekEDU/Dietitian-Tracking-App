@@ -43,7 +43,7 @@ public class RegisterBean implements Serializable {
         
         try {
             // Kullanıcı zaten var mı kontrolü
-            if (userService.findByEmail(email) != null) {
+            if (userService.findByEmail(email).isPresent()) {
                 FacesContext.getCurrentInstance().addMessage(null, 
                         new FacesMessage(FacesMessage.SEVERITY_ERROR, 
                                 "Kayıt Hatası", "Bu e-posta adresi zaten kullanılıyor"));
@@ -57,7 +57,7 @@ public class RegisterBean implements Serializable {
             newUser.setEmail(email);
             newUser.setPassword(password); // Gerçek uygulamada şifre hashlenmelidir
             newUser.setFullName(name + " " + surname);
-            newUser.setRole(UserRole.PATIENT); // Varsayılan olarak hasta rolü
+            newUser.setRole(UserRole.DIETITIAN); // Varsayılan olarak diyetisyen rolü
             
             // Kullanıcıyı kaydet
             userService.save(newUser);
@@ -71,6 +71,7 @@ public class RegisterBean implements Serializable {
             return "login?faces-redirect=true";
             
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             // Hata mesajı
             FacesContext.getCurrentInstance().addMessage(null, 
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, 
