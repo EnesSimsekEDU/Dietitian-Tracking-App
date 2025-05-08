@@ -28,28 +28,10 @@ public class DietitianService {
         return dietitianRepository.findAll();
     }
 
-    public Optional<Dietitian> findDietitianById(Long id) {
-        return dietitianRepository.findById(id);
-    }
 
-    public Optional<Dietitian> findDietitianByUserId(Long userId) {
-        return dietitianRepository.findByUserId(userId);
-    }
 
-    public Optional<Dietitian> getDietitianByUserId(Long userId) {
-        return findDietitianByUserId(userId);
-    }
-
-    public Optional<Dietitian> findDietitianByEmail(String email) {
-        return dietitianRepository.findByUserEmail(email);
-    }
-
-    public List<Dietitian> findDietitiansBySpecialization(String specialization) {
-        return dietitianRepository.findBySpecialization(specialization);
-    }
-
-    public List<Dietitian> searchDietitiansByName(String name) {
-        return dietitianRepository.findByNameContainingIgnoreCase(name);
+    public Optional<Dietitian> getDietitianByUserId(User user) {
+        return dietitianRepository.findDietitianByUser(user);
     }
 
     @Transactional
@@ -78,5 +60,9 @@ public class DietitianService {
     @Transactional
     public void deleteDietitian(Long id) {
         dietitianRepository.deleteById(id);
+    }
+
+    public Dietitian save(Dietitian newDietitian) {
+    return dietitianRepository.save(newDietitian);
     }
 }

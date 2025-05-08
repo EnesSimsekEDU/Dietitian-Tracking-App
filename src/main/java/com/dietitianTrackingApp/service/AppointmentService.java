@@ -108,4 +108,22 @@ public class AppointmentService {
     public void deleteAppointment(Long id) {
         appointmentRepository.deleteById(id);
     }
+
+    public Appointment save(Appointment newAppointment) {
+        // Diyetisyen bilgisini set et
+        if (newAppointment.getDietitian() != null) {
+            Dietitian dietitian = dietitianRepository.findById(newAppointment.getDietitian().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Dietitian not found"));
+            newAppointment.setDietitian(dietitian);
+        }
+
+        // Hastayı set et
+        if (newAppointment.getPatient() != null) {
+            Patient patient = patientRepository.findById(newAppointment.getPatient().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+            newAppointment.setPatient(patient);
+        }
+
+        return appointmentRepository.save(newAppointment);
+    }
 }

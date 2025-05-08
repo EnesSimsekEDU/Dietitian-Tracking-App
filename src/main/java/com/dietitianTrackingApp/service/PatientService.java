@@ -115,4 +115,17 @@ public class PatientService {
     public Optional<Patient> getPatientById(Long patientId) {
         return patientRepository.findById(patientId);
     }
+
+    public Patient save(Patient newPatient) {
+        return patientRepository.save(newPatient);
+    }
+
+    public Patient findById(Long id) {
+        return patientRepository.findById(id).get();
+    }
+
+    // get patient by user id
+    public Patient getPatientByUserId(Long userId) {
+        return patientRepository.findByUserId(userId).orElse(null);
+    }
 }

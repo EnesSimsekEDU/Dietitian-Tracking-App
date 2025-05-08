@@ -12,16 +12,17 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 public class User {
-    
+
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_id_seq")
-    @SequenceGenerator(name = "users_id_seq", sequenceName = "users_id_seq", initialValue = 7, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+  //  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_id_seq")
+  //  @SequenceGenerator(name = "users_id_seq", sequenceName = "users_id_seq", allocationSize = 1)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String surname;
 
     @Column(nullable = false, unique = true)

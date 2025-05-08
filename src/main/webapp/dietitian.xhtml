@@ -18,6 +18,9 @@
 
 <h:body>
     <div class="layout-wrapper">
+        <h:form id="messagesForm">
+            <p:messages id="messages" showDetail="false" closable="true" globalOnly="true" />
+        </h:form>
         <div class="layout-topbar">
             <div class="layout-topbar-inner flex justify-content-between align-items-center">
                 <div class="logo">
@@ -90,11 +93,26 @@
                         </div>
                     </div>
 
+                    <div class="mb-4">
+                        <p:commandButton value="Yeni Hasta Ekle"
+                                         icon="pi pi-user-plus"
+                                         onclick="PF('patientDialogVar').show()"
+                                         styleClass="mr-2"
+                                         process="@this"/>
+
+                        <p:commandButton value="Yeni Randevu Ekle"
+                                         icon="pi pi-calendar-plus"
+                                         onclick="PF('appointmentDialogVar').show()"
+                                         process="@this"/>
+                    </div>
+
+
+
                     <!-- Yaklaşan Randevular -->
                     <div class="col-12">
                         <div class="card">
                             <h2>Yaklaşan Randevular</h2>
-                            <p:dataTable value="#{dietitianBean.upcomingAppointments}" var="appointment"
+                            <p:dataTable  id="upcomingAppointments"  value="#{dietitianBean.upcomingAppointments}" var="appointment"
                                          styleClass="mt-3" emptyMessage="Yaklaşan randevu bulunamadı"
                                          paginator="true" rows="5"
                                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -171,6 +189,130 @@
                     </div>
                 </div>
             </h:form>
+            <p:dialog id="patientDialog" header="Yeni Hasta Ekle"
+                      widgetVar="patientDialogVar"
+                      modal="true"
+                      responsive="true"
+                      width="500"
+                      showEffect="fade"
+                      hideEffect="fade">
+                <h:form id="patientForm">
+                    <div class="p-fluid">
+                        <div class="grid">
+                            <div class="col-12 md:col-6">
+                                <div class="field">
+                                    <p:outputLabel for="name" value="Ad"/>
+                                    <p:inputText id="name" value="#{dietitianBean.newPatient.user.name}" required="true"/>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <div class="field">
+                                    <p:outputLabel for="surname" value="Soyad"/>
+                                    <p:inputText id="surname" value="#{dietitianBean.newPatient.user.surname}" required="true"/>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="field">
+                                    <p:outputLabel for="email" value="E-posta"/>
+                                    <p:inputText id="email" value="#{dietitianBean.newPatient.user.email}" required="true"/>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <div class="field">
+                                    <p:outputLabel for="birthDate" value="Doğum Tarihi"/>
+                                    <p:datePicker id="birthDate" value="#{dietitianBean.newPatient.birthDate}" required="true"/>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <div class="field">
+                                    <p:outputLabel for="gender" value="Cinsiyet"/>
+                                    <p:selectOneMenu id="gender" value="#{dietitianBean.newPatient.gender}" required="true">
+                                        <f:selectItem itemLabel="Seçiniz" itemValue=""/>
+                                        <f:selectItem itemLabel="Erkek" itemValue="MALE"/>
+                                        <f:selectItem itemLabel="Kadın" itemValue="FEMALE"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <div class="field">
+                                    <p:outputLabel for="height" value="Boy (cm)"/>
+                                    <p:inputNumber id="height" value="#{dietitianBean.newPatient.height}" required="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-content-end mt-3">
+                        <p:commandButton value="İptal"
+                                         onclick="PF('patientDialogVar').hide()"
+                                         styleClass="ui-button-secondary mr-2"
+                                         process="@this"/>
+                        <p:commandButton value="Kaydet"
+                                         actionListener="#{dietitianBean.savePatient}"
+                                         update=":mainForm:patientTable :messages"
+                                         process="@form"/>
+                    </div>
+                </h:form>
+            </p:dialog>
+
+            <!-- Randevu Ekleme Dialog'u -->
+
+            <p:dialog id="appointmentDialog" header="Yeni Randevu Ekle"
+                      widgetVar="appointmentDialogVar"
+                      modal="true"
+                      responsive="true"
+                      width="500">
+                <h:form id="appointmentForm">
+                    <div class="p-fluid">
+                        <div class="field">
+                            <p:outputLabel for="patient" value="Hasta*"/>
+                            <p:selectOneMenu id="patient"
+                                             value="#{dietitianBean.newAppointment.patient}"
+                                             converter="patientConverter"
+                                             required="true"
+                                             requiredMessage="Hasta seçimi zorunludur">
+                                <f:selectItem itemLabel="Hasta Seçiniz" noSelectionOption="true"/>
+                                <f:selectItems value="#{dietitianBean.patients}"
+                                               var="patient"
+                                               itemLabel="#{patient.user.fullName}"
+                                               itemValue="#{patient}"/>
+                            </p:selectOneMenu>
+                            <p:message for="patient"/>
+                        </div>
+
+                        <div class="field">
+                            <p:outputLabel for="appointmentDateTime" value="Randevu Tarihi ve Saati*"/>
+                            <p:datePicker id="appointmentDateTime"
+                                          value="#{dietitianBean.newAppointment.appointmentDateTime}"
+                                          pattern="dd.MM.yyyy HH:mm"
+                                          showTime="true"
+                                          required="true"
+                                          requiredMessage="Randevu tarihi zorunludur"/>
+                            <p:message for="appointmentDateTime"/>
+                        </div>
+
+                        <div class="field">
+                            <p:outputLabel for="notes" value="Notlar"/>
+                            <p:inputTextarea id="notes"
+                                             value="#{dietitianBean.newAppointment.notes}"
+                                             rows="3"/>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-content-end mt-3">
+                        <p:commandButton value="İptal"
+                                         type="button"
+                                         onclick="PF('appointmentDialogVar').hide()"
+                                         styleClass="ui-button-secondary mr-2"/>
+                        <p:commandButton value="Kaydet"
+                                         action="#{dietitianBean.saveAppointment}"
+                                         update=":mainForm:upcomingAppointments :messages @form"
+                                         process="@form"/>
+                    </div>
+                </h:form>
+            </p:dialog>
+
+
         </div>
 
         <div class="layout-footer">

@@ -1,18 +1,19 @@
 package com.dietitianTrackingApp.controller;
 
-import com.dietitianTrackingApp.entity.Appointment;
-import com.dietitianTrackingApp.entity.Dietitian;
-import com.dietitianTrackingApp.entity.Patient;
-import com.dietitianTrackingApp.entity.User;
+import com.dietitianTrackingApp.entity.*;
 import com.dietitianTrackingApp.service.AppointmentService;
 import com.dietitianTrackingApp.service.DietitianService;
 import com.dietitianTrackingApp.service.PatientService;
+import com.dietitianTrackingApp.service.UserService;
 import jakarta.annotation.PostConstruct;
+import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import lombok.Data;
+import org.primefaces.PrimeFaces;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -31,14 +32,23 @@ public class DietitianBean implements Serializable {
     private List<Patient> patients;
     private String searchName = "";
 
-    @Inject
+    private Patient newPatient;
+    private Patient selectedPatient;
+    private Appointment newAppointment;
+    private boolean showPatientDialog;
+    private boolean showAppointmentDialog;
+
+    @Autowired
     private AppointmentService appointmentService;
 
-    @Inject
+    @Autowired
     private PatientService patientService;
 
-    @Inject
+    @Autowired
     private DietitianService dietitianService;
+
+    @Autowired
+    private UserService userService;
 
     @PostConstruct
     public void init() {
@@ -50,18 +60,47 @@ public class DietitianBean implements Serializable {
             // Kullanıcı bir diyetisyen ise
             if (loggedInUser.getRole().name().equals("DIETITIAN")) {
                 // Diyetisyen bilgilerini al
-                Optional<Dietitian> dietitianOpt = dietitianService.getDietitianByUserId(loggedInUser.getId());
+                Optional<Dietitian> dietitianOpt = dietitianService.getDietitianByUserId(loggedInUser);
                 if (dietitianOpt.isPresent()) {
                     currentDietitian = dietitianOpt.get();
 
                     // Bu diyetisyene ait hastaları getir
-                    patients = patientService.getPatientsByDietitianId(currentDietitian.getId());
+                    loadPatients();
 
                     // Yaklaşan randevuları getir (bugün ve sonrası)
                     upcomingAppointments = appointmentService.getUpcomingAppointmentsByDietitianId(currentDietitian.getId());
+
+                    // Yeni nesneleri initialize et
+                    initializeNewPatient(); // Yeni hasta ve kullanıcı nesnelerini başlat
+                    initializeNewAppointment(); // Yeni randevu nesnesini başlat
                 }
             }
+        }else{
+            // Kullanıcı oturum açmamışsa, hata mesajı göster
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Hata", "Oturum açılmadı"));
+            // Giriş sayfasına yönlendir
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect("login.xhtml");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+
+
+
+
+    }
+
+    private void loadPatients() {
+        patients = patientService.getPatientsByDietitianId(currentDietitian.getId());
+    }
+
+    private void initializeNewAppointment() {
+        newAppointment = new Appointment();
+        newAppointment.setDietitian(currentDietitian);
+        // Patient nesnesini null olarak bırak, selectOneMenu seçimi ile doldurulacak
+        newAppointment.setStatus(AppointmentStatus.SCHEDULED);
     }
 
     public void searchPatients() {
@@ -69,7 +108,7 @@ public class DietitianBean implements Serializable {
             patients = patientService.searchPatientsByDietitianIdAndNameContaining(currentDietitian.getId(), searchName);
         } else {
             // Boş arama ise tüm hastaları getir
-            patients = patientService.getPatientsByDietitianId(currentDietitian.getId());
+            loadPatients();
         }
     }
 
@@ -84,4 +123,94 @@ public class DietitianBean implements Serializable {
         }
         return 0;
     }
+
+    private void initializeNewPatient() {
+        newPatient = new Patient();
+        User user = new User();
+        user.setRole(UserRole.PATIENT);
+        newPatient.setUser(user);
+        // Form alanlarını temizle
+        PrimeFaces.current().ajax().update("patientForm");
+    }
+
+    public void openNewPatientDialog() {
+        initializeNewPatient(); // Her dialog açılışında yeni nesneler oluştur
+        PrimeFaces.current().executeScript("PF('patientDialogVar').show()");
+    }
+
+    public void savePatient() {
+        try {
+            if (newPatient == null || newPatient.getUser() == null) {
+                throw new IllegalStateException("Hasta veya kullanıcı bilgileri eksik");
+            }
+
+            // Kullanıcı bilgilerini kontrol et ve kaydet
+            User userToSave = newPatient.getUser();
+            userToSave.setRole(UserRole.PATIENT);
+
+            // Varsayılan şifre oluştur
+            String defaultPassword = userToSave.getEmail().split("@")[0];
+            userToSave.setPassword(defaultPassword); // Şifreyi hashlemek için gerekli servis metodu kullanılmalı
+            userToSave.setFullName(userToSave.getName() + " " + userToSave.getSurname());
+
+            User savedUser = userService.save(userToSave);
+            newPatient.setUser(savedUser);
+            newPatient.setDietitian(currentDietitian);
+
+            Patient savedPatient = patientService.save(newPatient);
+            loadPatients();
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Başarılı",
+                            "Hasta kaydedildi. Geçici şifre: " + defaultPassword));
+
+            // Dialog'u kapat
+            PrimeFaces.current().executeScript("PF('patientDialogVar').hide()");
+
+            // Form ve tabloyu güncelle
+            PrimeFaces.current().ajax().update("mainForm:patientTable", "messages", "patientForm"
+            ,"appointmentForm");
+
+            // Yeni hasta nesnesini sıfırla
+            initializeNewPatient();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Hata",
+                            "Hasta kaydedilirken hata oluştu: " + e.getMessage()));
+            PrimeFaces.current().ajax().update("messages");
+        }
+    }
+
+    public void openNewAppointmentDialog() {
+        this.newAppointment = new Appointment();
+        this.newAppointment.setDietitian(currentDietitian); // Mevcut diyetisyeni set et
+        PrimeFaces.current().executeScript("PF('appointmentDialogVar').show()");
+    }
+
+    public void saveAppointment() {
+        try {
+            if (newAppointment.getPatient() == null) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Hata", "Lütfen bir hasta seçin"));
+                return;
+            }
+            newAppointment.setDietitian(currentDietitian);
+            newAppointment.setStatus(AppointmentStatus.SCHEDULED);
+            appointmentService.save(newAppointment);
+            upcomingAppointments = appointmentService.getUpcomingAppointmentsByDietitianId(currentDietitian.getId());
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Başarılı", "Randevu kaydedildi"));
+
+            PrimeFaces.current().executeScript("PF('appointmentDialogVar').hide()");
+            initializeNewAppointment();
+            PrimeFaces.current().ajax().update("mainForm:upcomingAppointments", "messages");
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Hata", e.getMessage()));
+        }
+    }
+
 }

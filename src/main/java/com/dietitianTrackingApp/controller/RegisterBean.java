@@ -1,7 +1,9 @@
 package com.dietitianTrackingApp.controller;
 
+import com.dietitianTrackingApp.entity.Dietitian;
 import com.dietitianTrackingApp.entity.User;
 import com.dietitianTrackingApp.entity.UserRole;
+import com.dietitianTrackingApp.service.DietitianService;
 import com.dietitianTrackingApp.service.UserService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
@@ -10,8 +12,10 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 @Named
 @ViewScoped
@@ -26,7 +30,9 @@ public class RegisterBean implements Serializable {
     
     @Inject
     private UserService userService;
-    
+    @Autowired
+    private DietitianService dietitianService;
+
     @PostConstruct
     public void init() {
         // İsteğe bağlı initialization
@@ -58,10 +64,16 @@ public class RegisterBean implements Serializable {
             newUser.setPassword(password); // Gerçek uygulamada şifre hashlenmelidir
             newUser.setFullName(name + " " + surname);
             newUser.setRole(UserRole.DIETITIAN); // Varsayılan olarak diyetisyen rolü
-            
+            Dietitian newDietitian = new Dietitian();
+            newDietitian.setUser(newUser);
+            newDietitian.setTitle("Dietitian");
+            newDietitian.setBiography("Dietitian biography");
+            newDietitian.setLicenseNumber(UUID.randomUUID().toString());
+            newDietitian.setSpecialization("Nutrition");
+
             // Kullanıcıyı kaydet
-            userService.save(newUser);
-            
+            User savedUser = userService.save(newUser);
+            dietitianService.save(newDietitian);
             // Başarılı kayıt mesajı
             FacesContext.getCurrentInstance().addMessage(null, 
                     new FacesMessage(FacesMessage.SEVERITY_INFO, 

@@ -58,4 +58,17 @@ public class Patient {
                 ", dietitianId=" + (dietitian != null ? dietitian.getId() : null) +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Patient patient = (Patient) o;
+        return id != null && id.equals(patient.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }
